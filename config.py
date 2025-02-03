@@ -28,6 +28,10 @@ import os
 import subprocess
 from libqtile import bar, extension, hook, layout, qtile, widget
 from libqtile.config import Click, Drag, Group, Key, KeyChord, Match, Screen
+
+# Scratchpad
+from libqtile.config import ScratchPad, DropDown
+
 from libqtile.lazy import lazy
 # Make sure 'qtile-extras' is installed or this config will not work.
 from qtile_extras import widget
@@ -197,10 +201,10 @@ groups = []
 group_names = ["1", "2", "3", "4", "5", "6", "7", "8", "9",]
 
 # group_labels = ["1", "2", "3", "4", "5", "6", "7", "8", "9",]
-group_labels = ["Ter", "Mail", "Chat", "Code", "5", "6", "7", "8", "Screen",]
+group_labels = ["Terminal", "Mail", "Music", "Code", "5", "6", "Papers", "8", "Screen",]
 # group_labels = ["", "", "", "", "", "", "", "", "",]
 
-group_layouts = ["tile", "monadtall", "tile", "tile", "tile", "tile", "tile", "tile", "tile"]
+group_layouts = ["columns", "monadtall", "columns", "columns", "tile", "tile", "tile", "tile", "tile"]
 
 for i in range(len(group_names)):
     groups.append(
@@ -229,6 +233,53 @@ for i in groups:
             ),
         ]
     )
+
+
+#  ____   ____ ____      _  _____ ____ _   _ ____   _    ____  ____
+# / ___| / ___|  _ \    / \|_   _/ ___| | | |  _ \ / \  |  _ \/ ___|
+# \___ \| |   | |_) |  / _ \ | || |   | |_| | |_) / _ \ | | | \___ \
+#  ___) | |___|  _ <  / ___ \| || |___|  _  |  __/ ___ \| |_| |___) |
+# |____/ \____|_| \_\/_/   \_\_| \____|_| |_|_| /_/   \_\____/|____/
+
+
+groups.append(
+    ScratchPad(
+        'scratchpad',
+        # [
+        #     DropDown(
+        #         'files',
+        #         'nemo',
+        #         width=0.4,
+        #         height=0.5,
+        #         x=0.3,
+        #         y=0.1,
+        #         opacity=1
+        #     ),
+        # ]
+        [
+                DropDown("files", "nemo", opacity=0.3, height=0.5, width=0.6, x=0.2, y=0.25, warp_pointer=False, 
+                        on_focus_lost_hide=False),  # Prevent auto-closing when losing focus),
+                DropDown(
+        "terminal", "alacritty",  # Change "alacritty" to your terminal
+        opacity=0.6, 
+        height=0.5, width=0.6, x=0.2, y=0.25,
+        warp_pointer=False,
+        on_focus_lost_hide=True  # Hide terminal when focus is lost
+    ),
+                DropDown(
+        "notepad", "mousepad ~/Documents/Notes/notes.txt",  # Change "mousepad" to "gedit", "kate", etc.
+        opacity=0.9, height=0.6, width=0.6, x=0.2, y=0.2,
+        on_focus_lost_hide=False
+    ),
+]
+    )
+)
+
+keys.extend([
+    Key(["mod1"], "Tab", lazy.group['scratchpad'].dropdown_toggle('files')),
+    Key(["mod1"], "q", lazy.group['scratchpad'].dropdown_toggle('terminal')),
+    Key(["mod1"], "z", lazy.group["scratchpad"].dropdown_toggle("notepad")),
+])
 
 colors = colors.DoomOne
 
@@ -461,16 +512,17 @@ def init_widgets_list():
         widget.BatteryIcon(
                 decorations=[
                      BorderDecoration(
-                         colour = "#FFFFFF",#colors[0],
+                         colour = "#f4d03f",#colors[0],
                          border_width = [0, 0, 2, 0],
                      )]
         ),
         widget.Battery(
+            foreground = "#f4d03f",
                 format = '{char} {percent:2.0%} {hour:d}:{min:02d} ',
                 fmt = '{}',
                 decorations=[
                 BorderDecoration(
-                colour = "#FFFFFF",#colors[0],
+                colour = "#f4d03f",#colors[0],
                 border_width = [0, 0, 2, 0],
             )]
         ),
