@@ -32,9 +32,15 @@ from libqtile.config import Click, Drag, Group, Key, KeyChord, Match, Screen
 # Scratchpad
 from libqtile.config import ScratchPad, DropDown
 
+
 from libqtile.lazy import lazy
 # Make sure 'qtile-extras' is installed or this config will not work.
+
 from qtile_extras import widget
+
+from libqtile import widget as base_widget # Import the standard ones
+from qtile_extras import widget as extra_widget    # Fancy widgets
+
 from qtile_extras.widget.decorations import BorderDecoration
 #from qtile_extras.widget import StatusNotifier
 import colors
@@ -80,11 +86,19 @@ keys = [
 
     # shit i addded
 
-    Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl -s set +2")), 
-    Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl -s set 2-")), 
+    # Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl -s set +2")), 
+    # Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl -s set 2-")), 
+    # Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer set Master 1000+")), 
+    # Key([], "XF86AudioLowerVolume", lazy.spawn("amixer set Master 1000-")), 
+    # Key([], "XF86AudioMute", lazy.spawn("amixer set Master toggle")), 
+    
+    
+    Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl set 2%+")), 
+    Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 2%-")), 
     Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer set Master 1000+")), 
     Key([], "XF86AudioLowerVolume", lazy.spawn("amixer set Master 1000-")), 
     Key([], "XF86AudioMute", lazy.spawn("amixer set Master toggle")), 
+
 
     # Switch between windows
     # Some layouts like 'monadtall' only need to use j/k to move
@@ -201,7 +215,7 @@ groups = []
 group_names = ["1", "2", "3", "4", "5", "6", "7", "8", "9",]
 
 # group_labels = ["1", "2", "3", "4", "5", "6", "7", "8", "9",]
-group_labels = ["Terminal", "Mail", "Music", "Code", "5", "6", "Papers", "8", "Screen",]
+group_labels = ["Music", "Mail", "Left", "4", "Code", "6", "Papers", "8", "Screen",]
 # group_labels = ["", "", "", "", "", "", "", "", "",]
 
 group_layouts = ["columns", "monadtall", "columns", "columns", "tile", "tile", "tile", "tile", "tile"]
@@ -245,17 +259,6 @@ for i in groups:
 groups.append(
     ScratchPad(
         'scratchpad',
-        # [
-        #     DropDown(
-        #         'files',
-        #         'nemo',
-        #         width=0.4,
-        #         height=0.5,
-        #         x=0.3,
-        #         y=0.1,
-        #         opacity=1
-        #     ),
-        # ]
         [
                 DropDown("files", "nemo", opacity=0.3, height=0.5, width=0.6, x=0.2, y=0.25, warp_pointer=False, 
                         on_focus_lost_hide=False),  # Prevent auto-closing when losing focus),
@@ -279,6 +282,11 @@ keys.extend([
     Key(["mod1"], "Tab", lazy.group['scratchpad'].dropdown_toggle('files')),
     Key(["mod1"], "q", lazy.group['scratchpad'].dropdown_toggle('terminal')),
     Key(["mod1"], "z", lazy.group["scratchpad"].dropdown_toggle("notepad")),
+    # Spawn Firefox if it's not running
+    # Key(["mod1"], "1", lazy.spawn("firefox --new-window")),
+
+    # Toggle floating mode manually
+    # Key(["mod1", "shift"], "1", lazy.window.toggle_floating()),  
 ])
 
 colors = colors.DoomOne
@@ -379,11 +387,12 @@ def init_widgets_list():
                  fontsize = 14
                  ),
         widget.CurrentLayoutIcon(
-                 # custom_icon_paths = [os.path.expanduser("~/.config/qtile/icons")],
-                 foreground = colors[1],
-                 padding = 4,
-                 scale = 0.6
-                 ),
+        # This manually tells Qtile where to find the PNG files you copied
+        custom_icon_paths = [os.path.expanduser("~/.icons")],
+        foreground = colors[1],
+        padding = 4,
+        scale = 0.6
+                ),
         widget.CurrentLayout(
                  foreground = colors[1],
                  padding = 5
@@ -539,8 +548,11 @@ def init_widgets_list():
                  ),
         # widget.Bluetooth(),
         widget.Spacer(length = 8),
-        widget.Systray(padding = 3),
-        widget.Spacer(length = 8),
+        base_widget.Systray(
+            padding = 3,
+            icon_size = 20,
+        ),
+        widget.Spacer(length = 6),
         # widget.Volume(
         #     device = "default",
         #     cardid = '0',
@@ -558,7 +570,8 @@ def init_widgets_screen1():
 
 # All other monitors' bars will display everything but widgets 22 (systray) and 23 (spacer).
 def init_widgets_screen2():
-    widgets_screen2 = init_widgets_list()
+    # widgets_screen2 = init_widgets_list()
+    widgets_screen2 = [w for w in init_widgets_list() if not isinstance(w, base_widget.Systray)]
     del widgets_screen2[22:24]
     return widgets_screen2
 
@@ -641,6 +654,7 @@ floating_layout = layout.Floating(
         Match(title="tastytrade"),        # tastytrade pop-out side gutter
         Match(title="tastytrade - Portfolio Report"), # tastytrade pop-out allocation
         Match(wm_class="tasty.javafx.launcher.LauncherFxApp"), # tastytrade settings
+        Match(wm_class="flameshot"),
     ]
 )
 auto_fullscreen = True
